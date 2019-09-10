@@ -1,0 +1,4 @@
+---
+# defaults file for minecraft
+rcon_port: 25576
+rcon_password: changeme

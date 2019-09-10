@@ -1,0 +1,22 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: vagrant
+  provider:
+    name: libvirt
+lint:
+  name: yamllint
+platforms:
+  - name: instance
+    box: centos/7
+    memory: 4096
+    cpus: 2
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+verifier:
+  name: ansible
+  lint:
+    name: ansible-lint

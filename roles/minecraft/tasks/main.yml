@@ -1,0 +1,100 @@
+---
+
+- name: Install dependencies
+  package:
+    name: '{{ item }}'
+    state: present
+  with_items:
+  - epel-release
+  - java-1.8.0-openjdk-devel
+  - rsync
+  - zip
+  - jq
+  - git
+  - gcc
+
+- name: Create the minecraft user
+  user:
+    name: minecraft
+    home: /opt/minecraft
+    system: yes
+
+- name: Ensure minecraft directories exist and permissions are correct
+  file:
+    path: /opt/{{ item }}
+    state: directory
+    owner: minecraft
+    group: minecraft
+    mode: 0755
+  with_items:
+  - minecraft
+  - minecraft/backup
+  - minecraft/build
+  - minecraft/build/spigot
+  - minecraft/server
+
+- name: Download latest Spigot build tools
+  get_url:
+    url: https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+    dest: /opt/minecraft/build/spigot/BuildTools.jar
+
+- name: Build Spigot server
+  command: java -jar BuildTools.jar
+  args:
+    chdir: /opt/minecraft/build/spigot
+    creates: /opt/minecraft/build/spigot/spigot-1.*.jar
+
+- name: Get filename for spigot jar
+  find:
+    paths: /opt/minecraft/build/spigot
+    file_type: file
+    patterns: 'spigot-1.*.jar'
+  register: spigot_find
+
+- name: Copy server jar to proper location
+  copy:
+    remote_src: yes
+    src: "{{ (spigot_find.files | sort(attribute='mtime', reverse=True) |  map(attribute='path') | list).0 }}"
+    dest: /opt/minecraft/server/spigot.jar
+
+- name: Clone mcrcon repo
+  git:
+    repo: https://git.code.sf.net/p/mcrcon/code
+    dest: /opt/minecraft/build/mcrcon-code
+
+- name: Build mcrcon binary
+  command: gcc mcrcon.c -o mcrcon
+  args:
+    chdir: /opt/minecraft/build/mcrcon-code
+    creates: /opt/minecraft/build/mcrcon-code/mcrcon
+
+- name: Copy mcrcon binary to proper location
+  copy:
+    remote_src: yes
+    src: /opt/minecraft/build/mcrcon-code/mcrcon
+    dest: /opt/minecraft/mcrcon
+    mode: 0755
+    owner: minecraft
+    group: minecraft
+
+- name: Create minecraft unit file
+  template:
+    src: minecraft.service.j2
+    dest: /etc/systemd/system/minecraft.service
+
+- name: Populate minecraft server.properties
+  template:
+    src: server.properties.j2
+    dest: /opt/minecraft/server/server.properties
+
+- name: Agree to the EULA
+  copy:
+    content: |
+      eula=true
+    dest: /opt/minecraft/server/eula.txt
+
+- name: Enable and start the minecraft service
+  service:
+    name: minecraft
+    state: started
+    enabled: yes

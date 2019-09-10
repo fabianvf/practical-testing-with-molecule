@@ -1,0 +1,28 @@
+[Unit]
+Description=Minecraft Server
+Documentation=
+
+Wants=network.target
+After=network.target
+
+[Service]
+User=minecraft
+Group=minecraft
+Nice=5
+EnvironmentFile=-/opt/minecraft/unit.conf
+KillMode=none
+SuccessExitStatus=0 1
+
+ProtectHome=true
+ProtectSystem=full
+PrivateDevices=true
+NoNewPrivileges=true
+PrivateTmp=true
+InaccessibleDirectories=/root /sys /srv /media -/lost+found
+ReadWriteDirectories=/opt/minecraft/server
+WorkingDirectory=/opt/minecraft/server
+ExecStart=/usr/bin/java -Xmx1024M -Xms1024M -jar spigot.jar --noconsole
+ExecStop=/opt/minecraft/mcrcon -H localhost -P {{ rcon_port }} -p {{ rcon_password }} stop
+
+[Install]
+WantedBy=multi-user.target
