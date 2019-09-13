@@ -1,4 +1,5 @@
 ---
+
 dependency:
   name: galaxy
 driver:
@@ -6,8 +7,10 @@ driver:
 lint:
   name: yamllint
 platforms:
-  - name: instance
-    image: "geerlingguy/docker-${MOLECULE_DISTRO:-centos7}-ansible:latest"
+  - name: minecraft-server
+    groups:
+     - server
+    image: "geerlingguy/docker-centos7-ansible:latest"
     command: init
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
@@ -15,11 +18,35 @@ platforms:
     pre_build_image: true
     published_ports:
       - 0.0.0.0:${MINECRAFT_PORT:-25565}:25565/tcp
+  - name: minecraft-client
+    groups:
+     - client
+    image: centos:7
+    pre_build_image: true
 provisioner:
   name: ansible
   lint:
     name: ansible-lint
+  inventory:
+    group_vars:
+      server:
+        motd: "Minecraft deployed in Docker by Molecule"
 verifier:
   name: ansible
   lint:
     name: ansible-lint
+scenario:
+  test_sequence:
+    - lint
+    - dependency
+    - cleanup
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - side_effect
+    - verify
+    - cleanup
+    - destroy
