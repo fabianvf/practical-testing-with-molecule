@@ -7,7 +7,14 @@ lint:
   name: yamllint
 platforms:
   - name: instance
-    image: centos:7
+    image: "geerlingguy/docker-${MOLECULE_DISTRO:-centos7}-ansible:latest"
+    command: init
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    privileged: true
+    pre_build_image: true
+    published_ports:
+      - 0.0.0.0:${MINECRAFT_PORT:-25565}:25565/tcp
 provisioner:
   name: ansible
   lint:

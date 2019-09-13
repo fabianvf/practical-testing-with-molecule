@@ -12,6 +12,8 @@ platforms:
     box: centos/7
     memory: 4096
     cpus: 2
+    instance_raw_config_args:
+    - "vm.network 'forwarded_port', guest: 25565, host: ${MINECRAFT_PORT:-26565}"
 provisioner:
   name: ansible
   lint:
