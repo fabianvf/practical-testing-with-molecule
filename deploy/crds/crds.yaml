@@ -1,0 +1,242 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: minecrafts.demos.fabianism.us
+spec:
+  group: demos.fabianism.us
+  names:
+    kind: Minecraft
+    listKind: MinecraftList
+    plural: minecrafts
+    singular: minecraft
+  scope: Namespaced
+  subresources:
+    status: {}
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          properties:
+            eulaAccepted:
+              type: boolean
+            image:
+              type: string
+            server:
+              type: object
+              properties:
+                version:
+                  type: string
+                name:
+                  type: string
+                port:
+                  type: integer
+                host:
+                  type: string
+                type:
+                  type: string
+                  enum:
+                  - VANILLA
+                  - BUKKIT
+                  - SPIGOT
+                  - PAPER
+                  - FORGE
+                  - FTB
+                  - CURSEFORGE
+                  - SPONGEVANILLA
+                  - CUSTOM
+                icon:
+                  type: string
+                  format: url
+                difficulty:
+                  type: string
+                  enum:
+                  - peaceful
+                  - easy
+                  - normal
+                  - hard
+                maxPlayers:
+                  type: integer
+                whitelist:
+                  type: string
+                  pattern: "\\w+[,\\w+]*"
+                ops:
+                  type: string
+                  pattern: "\\w+[,\\w+]*"
+                announcePlayerAchievements:
+                  type: boolean
+                enableCommandBlock:
+                  type: boolean
+                forceGamemode:
+                  type: boolean
+                hardcore:
+                  type: boolean
+                snooperEnabled:
+                  type: boolean
+                maxTickTime:
+                  type: integer
+                viewDistance:
+                  type: integer
+                mode:
+                  type: string
+                  enum:
+                  - creative
+                  - survival
+                  - adventure
+                  - spectator
+                motd:
+                  type: string
+                pvp:
+                  type: boolean
+                enableRcon:
+                  type: boolean
+                rconPassword:
+                  type: string
+                onlineMode:
+                  type: boolean
+                allowNether:
+                  type: boolean
+                allowFlight:
+                  type: boolean
+            world:
+              type: object
+              properties:
+                maxWorldSize:
+                  type: integer
+                generateStructures:
+                  type: boolean
+                spawnAnimals:
+                  type: boolean
+                spawnMonsters:
+                  type: boolean
+                spawnNpcs:
+                  type: boolean
+                seed:
+                  type: string
+                levelType:
+                  type: string
+                  enum:
+                  - default
+                  - flat
+                  - largebiomes
+                  - amplified
+                  - customized
+                  - buffet
+                generatorSettings:
+                  type: string
+                level:
+                  type: string
+                world:
+                  type: string
+            mods:
+              type: object
+              properties:
+                modpack:
+                  type: string
+                removeOldMods:
+                  type: boolean
+                ftbServerMod:
+                  type: string
+                cfServerMod:
+                  type: string
+                forgeversion:
+                  type: string
+                forgeInstaller:
+                  type: string
+                forgeInstallerURL:
+                  type: string
+                bukkitDownloadURL:
+                  type: string
+                spigotDownloadURL:
+                  type: string
+                buildFromSource:
+                  type: boolean
+                paperDownloadURL:
+                  type: string
+                manifest:
+                  type: string
+                spongeBranch:
+                  type: string
+                customServer:
+                  type: string
+            jvm:
+              type: object
+              properties:
+                memory:
+                  type: string
+                initMemory:
+                  type: string
+                maxMemory:
+                  type: string
+                jvmOpts:
+                  type: string
+                jvmXxOpts:
+                  type: string
+                jvmDdOpts:
+                  type: string
+            volumes:
+              type: object
+              properties: {}
+            resources:
+              type: object
+              properties:
+                limits:
+                  description: "Limits describes the maximum amount of compute resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/"
+                  type: object
+                  additionalProperties:
+                    type: string
+                    description: |
+                        Quantity is a fixed-point representation of a number.
+
+                        The serialization format is:
+
+                        <quantity>        ::= <signedNumber><suffix>
+                          (Note that <suffix> may be empty, from the "" case in <decimalSI>.)
+                        <digit>           ::= 0 | 1 | ... | 9
+                        <digits>          ::= <digit> | <digit><digits>
+                        <number>          ::= <digits> | <digits>.<digits> | <digits>. | .<digits>
+                        <sign>            ::= "+" | "-"
+                        <signedNumber>    ::= <number> | <sign><number>
+                        <suffix>          ::= <binarySI> | <decimalExponent> | <decimalSI>
+                        <binarySI>        ::= Ki | Mi | Gi | Ti | Pi | Ei
+                          (International System of units; See: http://physics.nist.gov/cuu/Units/binary.html)
+                        <decimalSI>       ::= m | "" | k | M | G | T | P | E
+                          (Note that 1024 = 1Ki but 1000 = 1k; I didn't choose the capitalization.)
+                        <decimalExponent> ::= "e" <signedNumber> | "E" <signedNumber>
+
+                        Examples:
+                          1500m
+                          "1.5"
+                          1.5Gi
+                requests:
+                  description: "Requests describes the minimum amount of compute resources required. If Requests is omitted for a container, it defaults to Limits if that is explicitly specified, otherwise to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/"
+                  type: object
+                  additionalProperties:
+                    type: string
+                    description: |
+                        Quantity is a fixed-point representation of a number.
+
+                        The serialization format is:
+
+                        <quantity>        ::= <signedNumber><suffix>
+                          (Note that <suffix> may be empty, from the "" case in <decimalSI>.)
+                        <digit>           ::= 0 | 1 | ... | 9
+                        <digits>          ::= <digit> | <digit><digits>
+                        <number>          ::= <digits> | <digits>.<digits> | <digits>. | .<digits>
+                        <sign>            ::= "+" | "-"
+                        <signedNumber>    ::= <number> | <sign><number>
+                        <suffix>          ::= <binarySI> | <decimalExponent> | <decimalSI>
+                        <binarySI>        ::= Ki | Mi | Gi | Ti | Pi | Ei
+                          (International System of units; See: http://physics.nist.gov/cuu/Units/binary.html)
+                        <decimalSI>       ::= m | "" | k | M | G | T | P | E
+                          (Note that 1024 = 1Ki but 1000 = 1k; I didn't choose the capitalization.)
+                        <decimalExponent> ::= "e" <signedNumber> | "E" <signedNumber>
+
+                        Examples:
+                          1500m
+                          "1.5"
+                          1.5Gi

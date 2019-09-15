@@ -1,0 +1,18 @@
+---
+
+eula_accepted: False
+meta:
+  name: example-minecraft
+  namespace: '{{ namespace|default("default") }}'
+image: docker.io/itzg/minecraft-server:latest
+server:
+  version: latest
+  name: Default Minecraft Server
+mods:
+  type: VANILLA
+world: {}
+jvm: {}
+volumes:
+  data:
+    type: emptyDir
+resources: {}

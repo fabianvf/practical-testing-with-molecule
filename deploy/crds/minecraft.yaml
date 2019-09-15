@@ -1,0 +1,75 @@
+apiVersion: demos.fabianism.us/v1alpha1
+kind: Minecraft
+metadata:
+  name: example-minecraft
+spec:
+  eulaAccepted: False # You need to change this to true
+  image: docker.io/itzg/minecraft-server:latest
+  server:
+    version: latest
+    name: My Minecraft Server
+    # port:
+    # host:
+    type: VANILLA # One of BUKKIT|SPIGOT|PAPER|FORGE|FTB|CURSEFORGE|VANILLA|SPONGEVANILLA|CUSTOM
+    # icon: ICON=http://..../some/image.png
+    # difficulty: easy # One of peaceful|easy|normal|hard|
+    # maxPlayers: 20
+    # whitelist:
+    # - user1
+    # - user2
+    # ops:
+    # - user1
+    # - user2
+    # announcePlayerAchievements: True
+    # enableCommandBlock: False
+    # forceGamemode: False
+    # hardcore: False
+    # snooperEnabled: False
+    # maxTickTime: 60000
+    # viewDistance: 10
+    # mode: survival # One of creative|survival|adventure|spectator
+    # motd: My Server
+    # pvp: True
+    # enableRcon: False
+    # rconPasswordSecretRef: 'name of secret containing "password" key'
+    # onlineMode: True
+    # allowNether: True
+    # allowFlight: False
+
+  world: {}
+    # maxWorldSize: 10000
+    # generateStructures: True
+    # spawnAnimals: True
+    # spawnMonsters: True
+    # spawnNpcs: True
+    # levelSeed: 1785852800490497919
+    # levelType: default # One of default|flat|largebiomes|amplified|customized|buffet
+    # generatorSettings:
+    # level: bonus
+    # world: URL to world
+
+  mods: {}
+    # modpack:
+    # removeOldMods: False
+    # ftbServerMod: required when server.type == FTB
+    # cfServerMod: required when server.type == CURSEFORGE
+    # forgeVersion: (defaults to latest stable)
+    # forgeInstaller: Will download corresponding version if not provided
+    # forgeInstallerURL:
+    # bukkitDownloadURL:
+    # spigotDownloadURL:
+    # paperDownloadURL
+    # buildFromSource: False
+    # manifest:
+    # spongeBranch:
+    # customServer:
+  jvm:
+    memory: 1G
+    # initMemory:
+    # maxMemory:
+    # jvmOpts:
+    # jvmXxOpts:
+    # jvmDdOpts:
+  volumes:
+    data:
+      type: emptyDir

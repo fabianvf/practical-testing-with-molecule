@@ -1,0 +1,50 @@
+---
+
+- set_fact:
+    processed_volumes: '{{ volumes | operator_storage(meta.namespace) }}'
+    has_route: "{{ ('route.openshift.io' in lookup('k8s', cluster_info='api_groups')) | bool }}"
+    minecraft_env:
+    - name: EULA
+      value: '{{ "True" if eula_accepted == True else "False" | string }}'
+    - name: MOTD
+      value: '{{ server.motd | default("A Minecraft Server managed by Kubernetes") }}'
+    - name: OVERRIDE_SERVER_PROPERTIES
+      value: "True"
+
+- name: Create required resources for storage
+  k8s:
+    namespace: '{{ meta.namespace }}'
+    definition: '{{ item }}'
+  with_items: '{{ processed_volumes.definitions }}'
+
+- name: Build minecraft envvars
+  set_fact:
+    minecraft_env: '{{ minecraft_env + [{
+      "name": (item.key | upper),
+      "value": ("True" if item.value == True else ("False" if item.value == False else item.value))|string
+    }] }}'
+  with_dict: '{{ server | combine(world) | combine(mods) | combine(jvm) }}'
+
+- debug: var=minecraft_env
+
+- name: Create Deployment
+  k8s:
+    namespace: '{{ meta.namespace }}'
+    definition: '{{ lookup("template", "deployment.yaml.j2") | from_yaml }}'
+  vars:
+    volume_specs: '{{ processed_volumes.volumes }}'
+    volume_mounts: '{{ processed_volumes.volume_mounts }}'
+
+- name: Create Service
+  k8s:
+    namespace: '{{ meta.namespace }}'
+    definition: '{{ lookup("template", "service.yaml.j2") | from_yaml }}'
+
+- name: Create Route
+  k8s:
+    namespace: '{{ meta.namespace }}'
+    definition: '{{ lookup("template", "route.yaml.j2") | from_yaml }}'
+  when: has_route
+
+- include_tasks: status.yml
+  when: _demos_fabianism_us_minecraft is defined

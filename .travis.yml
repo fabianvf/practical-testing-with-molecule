@@ -1,0 +1,16 @@
+sudo: required
+services: docker
+language: python
+install:
+  - pip install docker molecule openshift jmespath mcstatus
+jobs:
+  include:
+  - name: Test regular role
+    stage: test
+    script:
+    - cd roles/minecraft
+    - molecule test
+  - name: Test Kubernetes role
+    script: molecule test
+  - name: Test Operator
+    script: molecule test -s test-local

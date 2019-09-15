@@ -1,0 +1,40 @@
+---
+- name: Verify
+  hosts: localhost
+  connection: local
+  vars:
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+  tasks:
+  - name: Output address
+    debug: var=address
+
+  - name: Wait for minecraft deployment to report ready
+    k8s_facts:
+      api_version: 'apps/v1'
+      kind: 'Deployment'
+      namespace: '{{ namespace }}'
+      label_selectors:
+      - 'app=example-minecraft'
+    register: deployment
+    until: "'MinimumReplicasAvailable' in (deployment | json_query('resources[].status.conditions[].reason'))"
+    delay: 10
+    retries: 60
+
+  - when: molecule_yml.scenario.name != 'test-cluster'
+    block:
+    - name: Wait two minutes to confirm server is reachable
+      command: 'mcstatus {{ address }} ping'
+      changed_when: false
+      retries: 24
+      delay: 5
+      register: result
+      until: not (result is failed)
+
+    - name: Fetch status of server
+      command: 'mcstatus {{ address }} status'
+      changed_when: false
+      register: mcstatus
+
+    - name: Output status of server
+      debug:
+        var: mcstatus.stdout_lines

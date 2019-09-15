@@ -1,0 +1,5 @@
+---
+- version: v1alpha1
+  group: demos.fabianism.us
+  kind: Minecraft
+  role: /opt/ansible/roles/minecraft-kubernetes
