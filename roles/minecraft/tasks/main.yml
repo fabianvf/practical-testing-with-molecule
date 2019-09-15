@@ -61,6 +61,7 @@
   git:
     repo: https://git.code.sf.net/p/mcrcon/code
     dest: /opt/minecraft/build/mcrcon-code
+    version: master
 
 - name: Build mcrcon binary
   command: gcc mcrcon.c -o mcrcon
