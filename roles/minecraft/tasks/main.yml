@@ -30,26 +30,12 @@
   - minecraft
   - minecraft/backup
   - minecraft/build
-  - minecraft/build/spigot
   - minecraft/server
 
 - name: Download latest Spigot build tools
   get_url:
     url: https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
     dest: /opt/minecraft/build/spigot/BuildTools.jar
-
-- name: Build Spigot server
-  command: java -jar BuildTools.jar
-  args:
-    chdir: /opt/minecraft/build/spigot
-    creates: /opt/minecraft/build/spigot/spigot-1.*.jar
-
-- name: Get filename for spigot jar
-  find:
-    paths: /opt/minecraft/build/spigot
-    file_type: file
-    patterns: 'spigot-1.*.jar'
-  register: spigot_find
 
 - name: Copy server jar to proper location
   copy:
