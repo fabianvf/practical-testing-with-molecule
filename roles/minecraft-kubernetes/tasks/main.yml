@@ -6,7 +6,7 @@
     has_route: "{{ ('route.openshift.io' in lookup('k8s', cluster_info='api_groups')) | bool }}"
     minecraft_env:
     - name: EULA
-      value: '{{ "True" if eula_accepted is True else "False" | string }}'
+      value: '{{ "True" if eula_accepted else "False" | string }}'
     - name: MOTD
       value: '{{ server.motd | default("A Minecraft Server managed by Kubernetes") }}'
     - name: OVERRIDE_SERVER_PROPERTIES
@@ -22,7 +22,7 @@
   set_fact:
     minecraft_env: '{{ minecraft_env + [{
       "name": (item.key | upper),
-      "value": ("True" if item.value is True else ("False" if item.value is False else item.value))|string
+      "value": (item.value if item.value not in [True, False] else "True" if item.value else "False" )|string
     }] }}'
   with_dict: '{{ server | combine(world) | combine(mods) | combine(jvm) }}'
 
