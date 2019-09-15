@@ -17,7 +17,7 @@
           kind='Minecraft',
           resource_name='example-minecraft',
           namespace=namespace
-        )}}"
+        ) }}"
 
     - name: Store address
       set_fact:
@@ -26,7 +26,7 @@
           kind='Minecraft',
           resource_name='example-minecraft',
           namespace=namespace
-        ).0.status.address}}"
+        ).0.status.address }}"
     rescue:
     - name: Output CR
       debug: var=custom_resource
@@ -36,9 +36,10 @@
           kind='Minecraft',
           resource_name='example-minecraft',
           namespace=namespace
-        )}}"
+        ) }}"
 
-    - fail:
+    - name: Fail out
+      fail:
         msg: "Failed in asserts.yml"
 
 - import_playbook: '{{ playbook_dir }}/../default/verify.yml'
