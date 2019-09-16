@@ -21,7 +21,7 @@ platforms:
   - name: minecraft-client
     groups:
      - client
-    image: centos:7
+    image: python
     pre_build_image: true
 provisioner:
   name: ansible
@@ -31,6 +31,9 @@ provisioner:
     group_vars:
       server:
         motd: "Minecraft deployed in Docker by Molecule"
+    host_vars:
+      minecraft-client:
+        ansible_python_interpreter: /usr/local/bin/python
 verifier:
   name: ansible
   lint:

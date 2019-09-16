@@ -8,10 +8,10 @@
   - epel-release
   - java-1.8.0-openjdk-devel
   - rsync
-  - zip
-  - jq
   - git
   - gcc
+  # - zip
+  # - jq
 
 - name: Create the minecraft user
   user:
@@ -32,16 +32,34 @@
   - minecraft/build
   - minecraft/server
 
-- name: Download latest Spigot build tools
-  get_url:
-    url: https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
-    dest: /opt/minecraft/build/spigot/BuildTools.jar
+- name: Get version manifest
+  uri:
+    url: https://launchermeta.mojang.com/mc/game/version_manifest.json
+    method: GET
+  register: version_manifest
 
-- name: Copy server jar to proper location
-  copy:
-    remote_src: yes
-    src: "{{ (spigot_find.files | sort(attribute='mtime', reverse=True) |  map(attribute='path') | list).0 }}"
-    dest: /opt/minecraft/server/spigot.jar
+- debug:
+    var: recent_release
+    verbosity: 3
+  vars:
+    recent_release: '{{ version_manifest.json.versions | selectattr("id", "eq", version_manifest.json.latest.release) | list }}'
+
+- name: Get most recent release to download
+  uri:
+    url: '{{ recent_release.url }}'
+    method: GET
+  vars:
+    recent_release: '{{ (version_manifest.json.versions | selectattr("id", "equalto", version_manifest.json.latest.release) | list).0 }}'
+  register: latest_version_manifest
+
+- debug:
+    var: latest_version_manifest
+    verbosity: 3
+
+- name: Download latest Minecraft release
+  get_url:
+    url: '{{ latest_version_manifest.json.downloads.server.url }}'
+    dest: /opt/minecraft/server/server.jar
 
 - name: Clone mcrcon repo
   git:
@@ -81,7 +99,8 @@
     dest: /opt/minecraft/server/eula.txt
 
 - name: Enable and start the minecraft service
-  service:
+  systemd:
     name: minecraft
     state: started
     enabled: yes
+    daemon_reload: yes

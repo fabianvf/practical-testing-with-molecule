@@ -43,3 +43,17 @@ verifier:
   name: ansible
   lint:
     name: ansible-lint
+  inventory:
+    host_vars:
+      localhost:
+        address: "{{ q('k8s',
+          api_version='v1',
+          kind='Pod',
+          namespace=namespace,
+          label_selector='app=example-minecraft'
+        ).0.status.hostIP }}:{{ q('k8s',
+          api_version='v1',
+          kind='Service',
+          namespace=namespace,
+          resource_name='example-minecraft-minecraft'
+        ).0.spec.ports.0.nodePort }}"

@@ -1,9 +1,47 @@
 ---
 # This is an example playbook to execute Ansible tests.
+- hosts: all
+  gather_facts: yes
 
 - name: Verify
-  hosts: all
+  hosts: client
+  vars:
+    address: '{{ hostvars["minecraft-server"].ansible_default_ipv4.address }}'
   tasks:
-  - name: Example assertion
+  - debug: msg={{ item }}
+    with_items:
+    - '{{ hostvars["minecraft-server"] }}'
+
+  - name: Wait two minutes to confirm server is reachable
+    command: 'mcstatus {{ address }} ping'
+    changed_when: false
+    retries: 24
+    delay: 5
+    register: result
+    until: not (result is failed)
+
+  - name: Fetch status of server
+    command: 'mcstatus {{ address }} status'
+    changed_when: false
+    register: mcstatus_status_raw
+  - name: load the mcstatus status json
+    set_fact:
+      mcstatus_status: '{{ mcstatus_status_raw.stdout | from_yaml }}'
+
+  - debug: var=mcstatus_status
+
+  - name: Query server
+    command: 'mcstatus {{ address }} query'
+    changed_when: false
+    register: mcstatus_query_raw
+  - name: load the mcstatus query json
+    set_fact:
+      mcstatus_query: '{{ mcstatus_query_raw.stdout | from_yaml }}'
+
+  - name: Assert motd is properly set and reported
     assert:
-      that: true
+      that:
+      - mcstatus_query.motd == motd
+      - motd in mcstatus_status.description
+    vars:
+      motd: '{{ hostvars["minecraft-server"].motd }}'
