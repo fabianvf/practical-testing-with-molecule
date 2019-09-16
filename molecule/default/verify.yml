@@ -20,21 +20,19 @@
     delay: 10
     retries: 60
 
-  - when: molecule_yml.scenario.name != 'test-cluster'
-    block:
-    - name: Wait two minutes to confirm server is reachable
-      command: 'mcstatus {{ address }} ping'
-      changed_when: false
-      retries: 24
-      delay: 5
-      register: result
-      until: not (result is failed)
+  - name: Wait two minutes to confirm server is reachable
+    command: 'mcstatus {{ address }} ping'
+    changed_when: false
+    retries: 24
+    delay: 5
+    register: result
+    until: not (result is failed)
 
-    - name: Fetch status of server
-      command: 'mcstatus {{ address }} status'
-      changed_when: false
-      register: mcstatus
+  - name: Fetch status of server
+    command: 'mcstatus {{ address }} status'
+    changed_when: false
+    register: mcstatus
 
-    - name: Output status of server
-      debug:
-        var: mcstatus.stdout_lines
+  - name: Output status of server
+    debug:
+      var: mcstatus.stdout_lines

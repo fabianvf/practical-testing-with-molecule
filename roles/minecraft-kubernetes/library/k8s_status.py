@@ -266,7 +266,7 @@ class KubernetesAnsibleStatusModule(KubernetesAnsibleModule):
         self.conditions = self.params.get('conditions') or []
 
         if self.conditions and self.status and self.status.get('conditions'):
-            raise ValueError("You cannot specify conditions in both the ` + "`status`" + ` and ` + "`conditions`" + ` parameters")
+            raise ValueError("You cannot specify conditions in both the `status` and `conditions` parameters")
 
         if self.conditions:
             self.status['conditions'] = self.conditions

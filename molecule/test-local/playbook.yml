@@ -26,33 +26,29 @@
     image: demos.fabianism.us/game-server-operator:testing
     custom_resource: "{{ lookup('file', '/'.join([deploy_dir, 'crds/minecraft.yaml'])) | from_yaml }}"
   tasks:
-  - block:
-    - name: Delete the Operator Deployment
+  - when: hostvars[groups.k8s.0].build_cmd.changed
+    block:
+    - name: Delete CR
       k8s:
         state: absent
+        api_version: '{{ custom_resource.apiVersion }}'
+        kind: '{{ custom_resource.kind }}'
+        name: '{{ custom_resource.metadata.name }}'
+        namespace: '{{ namespace }}'
+        wait: yes
+
+    - name: Kill operator deployment
+      k8s:
         namespace: '{{ namespace }}'
         definition: "{{ lookup('template', '/'.join([deploy_dir, 'operator.yaml.j2'])) }}"
-      register: delete_deployment
-      when: hostvars[groups.k8s.0].build_cmd.changed
-
-    - name: Wait 30s for Operator Deployment to terminate
-      k8s_facts:
-        api_version: '{{ definition.apiVersion }}'
-        kind: '{{ definition.kind }}'
-        namespace: '{{ namespace }}'
-        name: '{{ definition.metadata.name }}'
-      vars:
-        definition: "{{ lookup('template', '/'.join([deploy_dir, 'operator.yaml.j2'])) | from_yaml }}"
-      register: deployment
-      until: not deployment.resources
-      delay: 3
-      retries: 10
-      when: delete_deployment.changed
-
+        state: absent
+        wait: yes
+  - block:
     - name: Create the Operator Deployment
       k8s:
         namespace: '{{ namespace }}'
         definition: "{{ lookup('template', '/'.join([deploy_dir, 'operator.yaml.j2'])) }}"
+        wait: yes
 
     - name: Create the demos.fabianism.us/v1alpha1.Minecraft
       k8s:
@@ -63,6 +59,12 @@
           kind: '{{ custom_resource.kind }}'
           metadata: '{{ custom_resource.metadata }}'
           spec: '{{ custom_resource.spec | combine({"eulaAccepted": True}) }}'
+        wait: yes
+        wait_timeout: 60
+        wait_condition:
+          type: Running
+          reason: Successful
+          status: "True"
 
     - name: Wait 40s for reconciliation to run
       k8s_facts:
