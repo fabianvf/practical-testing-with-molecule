@@ -13,17 +13,12 @@
     - '{{ hostvars["minecraft-server"] }}'
 
   - name: Wait two minutes to confirm server is reachable
-    command: 'mcstatus {{ address }} ping'
+    command: 'mcstatus {{ address }} status'
     changed_when: false
     retries: 24
     delay: 5
-    register: result
-    until: not (result is failed)
-
-  - name: Fetch status of server
-    command: 'mcstatus {{ address }} status'
-    changed_when: false
     register: mcstatus_status_raw
+    until: not (mcstatus_status_raw is failed)
   - name: load the mcstatus status json
     set_fact:
       mcstatus_status: '{{ mcstatus_status_raw.stdout | from_yaml }}'

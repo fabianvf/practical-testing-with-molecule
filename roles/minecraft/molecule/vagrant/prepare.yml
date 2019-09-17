@@ -2,8 +2,24 @@
 - name: Prepare
   hosts: all
   gather_facts: false
+  become: true
   tasks:
     - name: Install python for Ansible
-      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
-      become: true
+      raw: test -e /usr/bin/python || (yum -y update && yum install -y python)
       changed_when: false
+
+- hosts: client
+  gather_facts: no
+  become: true
+  tasks:
+    - name: Install epel
+      package:
+        name: epel-release
+
+    - name: Install pip
+      package:
+        name: python-pip
+
+    - name: Install mcstatus
+      pip:
+        name: mcstatus

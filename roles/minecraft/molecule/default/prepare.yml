@@ -1,0 +1,8 @@
+---
+
+- name: Set up client
+  hosts: client
+  tasks:
+    - name: Install mcstatus
+      pip:
+        name: mcstatus
