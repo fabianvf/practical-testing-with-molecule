@@ -7,6 +7,7 @@
   connection: local
   vars:
     ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    kubernetes_ip: '{{ hostvars["kind-test-local"].ansible_default_ipv4.address }}'
   tasks:
   - name: Wait for minecraft deployment to report ready
     k8s_facts:

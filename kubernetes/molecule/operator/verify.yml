@@ -1,0 +1,25 @@
+---
+
+- name: Verify
+  hosts: localhost
+  connection: local
+  vars:
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    deploy_dir: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/deploy"
+  tasks:
+  - block:
+    - import_tasks: tasks/test_working_defaults.yml
+    rescue:
+    - name: Output CR
+      debug: var=custom_resource
+      vars:
+        custom_resource: "{{ q('k8s',
+          api_version='demos.fabianism.us/v1alpha1',
+          kind='Minecraft',
+          resource_name='example-minecraft',
+          namespace=namespace
+        ) }}"
+
+    - name: Fail out
+      fail:
+        msg: "Failed in verify.yml"

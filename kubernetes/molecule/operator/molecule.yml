@@ -33,6 +33,8 @@ provisioner:
     group_vars:
       all:
         namespace: ${TEST_NAMESPACE:-osdk-test}
+        api_version: demos.fabianism.us/v1alpha1
+        kind: Minecraft
   env:
     K8S_AUTH_KUBECONFIG: /tmp/molecule/kind-test-local/kubeconfig
     KUBECONFIG: /tmp/molecule/kind-test-local/kubeconfig

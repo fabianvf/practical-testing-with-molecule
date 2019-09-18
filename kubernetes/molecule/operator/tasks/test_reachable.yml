@@ -1,0 +1,40 @@
+---
+
+- name: Wait two minutes to confirm server is reachable
+  command: 'mcstatus {{ address }} status'
+  changed_when: false
+  retries: 24
+  delay: 5
+  register: mcstatus_status_raw
+  until: not (mcstatus_status_raw is failed)
+
+- name: load the mcstatus status json
+  set_fact:
+    mcstatus_status: '{{ mcstatus_status_raw.stdout | from_yaml }}'
+
+- debug: var=mcstatus_status
+
+- name: Assert that the status response looks correct
+  assert:
+    that:
+    - mcstatus_status.version is defined
+    - mcstatus_status.players is defined
+
+- when: query_enabled is defined and query_enabled
+  block:
+  - name: Query server
+    command: 'mcstatus {{ address }} query'
+    changed_when: false
+    register: mcstatus_query_raw
+
+  - name: load the mcstatus query json
+    set_fact:
+      mcstatus_query: '{{ mcstatus_query_raw.stdout | from_yaml }}'
+
+  - debug: var=mcstatus_query
+
+  - name: Assert that the query response looks correct
+    assert:
+      that:
+      - mcstatus_query.software is defined
+      - mcstatus_query.host is defined

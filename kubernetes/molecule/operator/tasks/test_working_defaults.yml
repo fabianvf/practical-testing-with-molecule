@@ -1,0 +1,28 @@
+---
+
+- name: Create a minimal Minecraft CR
+  k8s:
+    definition:
+      apiVersion: '{{ api_version }}'
+      kind: '{{ kind }}'
+      metadata:
+        name: working-defaults
+        namespace: '{{ namespace }}'
+      spec:
+        eulaAccepted: yes
+    wait: yes
+    wait_timeout: 60
+    wait_condition:
+      type: Running
+      reason: Successful
+      status: "True"
+  register: twd_cr_result
+
+- name: Assert that an address has been set on the custom resource
+  assert:
+    that: twd_cr_result.result.status.address is defined
+
+- import_tasks: test_reachable.yml
+  vars:
+    query_enabled: no
+    address: '{{ twd_cr_result.result.status.address }}'

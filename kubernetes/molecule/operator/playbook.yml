@@ -1,0 +1,35 @@
+---
+
+- name: Build Operator in Kubernetes docker container
+  hosts: k8s
+  tasks:
+  - name: Build Operator Image
+    command: docker build -f /build/build/Dockerfile -t testing /build
+
+  - name: Get image ID for build
+    command: docker images testing -q
+    changed_when: false
+    register: docker_image_id
+
+  - name: Tag image with hash
+    command: docker tag testing testing:{{ docker_image_id.stdout }}
+
+  - name: Set image
+    set_fact:
+      image: 'testing:{{ docker_image_id.stdout }}'
+    delegate_to: localhost
+    delegate_facts: yes
+
+- name: Converge
+  hosts: localhost
+  connection: local
+  vars:
+    ansible_python_interpreter: '{{ ansible_playbook_python }}'
+    deploy_dir: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/deploy"
+    pull_policy: Never
+  tasks:
+  - name: Create the Operator Deployment
+    k8s:
+      namespace: '{{ namespace }}'
+      definition: "{{ lookup('template', '/'.join([deploy_dir, 'operator.yaml.j2'])) }}"
+      wait: yes
