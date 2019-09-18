@@ -1,2 +1,4 @@
 *.retry
 .env
+*.pyc
+__pycache__/

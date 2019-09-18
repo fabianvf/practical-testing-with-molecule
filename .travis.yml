@@ -8,9 +8,13 @@ jobs:
   - name: Test regular role
     stage: test
     script:
-    - cd roles/minecraft
+    - cd traditional/minecraft
     - molecule test
   - name: Test Kubernetes role
-    script: molecule test
+    script:
+    - cd kubernetes
+    - molecule test
   - name: Test Operator
-    script: molecule test -s test-local
+    script:
+    - cd kubernetes
+    - molecule test -s test-local
