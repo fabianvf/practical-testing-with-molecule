@@ -8,10 +8,6 @@
   vars:
     address: '{{ hostvars["minecraft-server"].ansible_default_ipv4.address }}'
   tasks:
-  - debug: msg={{ item }}
-    with_items:
-    - '{{ hostvars["minecraft-server"] }}'
-
   - name: Wait two minutes to confirm server is reachable
     command: 'mcstatus {{ address }} status'
     changed_when: false

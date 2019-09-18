@@ -1,18 +1,13 @@
 ---
+- hosts: all
+  gather_facts: yes
+
 - name: Verify
   hosts: localhost
   connection: local
   vars:
     ansible_python_interpreter: '{{ ansible_playbook_python }}'
   tasks:
-  - name: Set address based on Kubernetes IP
-    set_fact:
-      address: '{{ hostvars.k8s.ansible_default_ipv4.address }}'
-    when: address is not defined
-
-  - name: Output address
-    debug: var=address
-
   - name: Wait for minecraft deployment to report ready
     k8s_facts:
       api_version: 'apps/v1'
@@ -25,19 +20,51 @@
     delay: 10
     retries: 60
 
+  - name: Set address based on Kubernetes IP
+    set_fact:
+      address: "{{ q('k8s',
+          api_version='v1',
+          kind='Pod',
+          namespace=namespace,
+          label_selector='app=example-minecraft'
+        ).0.status.hostIP }}:{{ q('k8s',
+          api_version='v1',
+          kind='Service',
+          namespace=namespace,
+          resource_name='example-minecraft-minecraft'
+        ).0.spec.ports.0.nodePort }}"
+    when: address is not defined
+
+  - name: Output address
+    debug: var=address
+
   - name: Wait two minutes to confirm server is reachable
-    command: 'mcstatus {{ address }} ping'
+    command: 'mcstatus {{ address }} status'
     changed_when: false
     retries: 24
     delay: 5
-    register: result
-    until: not (result is failed)
+    register: mcstatus_status_raw
+    until: not (mcstatus_status_raw is failed)
+  - name: load the mcstatus status json
+    set_fact:
+      mcstatus_status: '{{ mcstatus_status_raw.stdout | from_yaml }}'
 
-  - name: Fetch status of server
-    command: 'mcstatus {{ address }} status'
+  - debug: var=mcstatus_status
+
+  - name: Query server
+    command: 'mcstatus {{ address }} query'
     changed_when: false
-    register: mcstatus
+    register: mcstatus_query_raw
+  - name: load the mcstatus query json
+    set_fact:
+      mcstatus_query: '{{ mcstatus_query_raw.stdout | from_yaml }}'
 
-  - name: Output status of server
-    debug:
-      var: mcstatus.stdout_lines
+  - debug: var=mcstatus_query
+
+  # - name: Assert motd is properly set and reported
+  #   assert:
+  #     that:
+  #     - mcstatus_query.motd == motd
+  #     - motd in mcstatus_status.description
+  #   vars:
+  #     motd: '{{ hostvars["minecraft-server"].motd }}'

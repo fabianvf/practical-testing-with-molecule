@@ -40,6 +40,6 @@
 
     - name: Fail out
       fail:
-        msg: "Failed in asserts.yml"
+        msg: "Failed in verify.yml"
 
 - import_playbook: '{{ playbook_dir }}/../default/verify.yml'
