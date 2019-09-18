@@ -17,4 +17,4 @@ jobs:
   - name: Test Operator
     script:
     - cd kubernetes
-    - molecule test -s test-local
+    - molecule test -s operator
