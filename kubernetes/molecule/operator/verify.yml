@@ -5,20 +5,27 @@
   connection: local
   vars:
     ansible_python_interpreter: '{{ ansible_playbook_python }}'
-    deploy_dir: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/deploy"
   tasks:
   - block:
     - import_tasks: tasks/test_working_defaults.yml
-    rescue:
-    - name: Output CR
-      debug: var=custom_resource
       vars:
-        custom_resource: "{{ q('k8s',
-          api_version='demos.fabianism.us/v1alpha1',
-          kind='Minecraft',
-          resource_name='example-minecraft',
-          namespace=namespace
-        ) }}"
+        name: test-working-defaults
+
+    - import_tasks: tasks/test_eula_required.yml
+      vars:
+        name: test-no-eula
+    rescue:
+    - name: Get Minecrafts
+      k8s_facts:
+        api_version: '{{ api_version }}'
+        kind: '{{ kind }}'
+        label_selectors:
+          - game=minecraft
+      register: minecrafts
+
+    - name: Output Minecrafts
+      debug:
+        var: minecrafts
 
     - name: Fail out
       fail:
