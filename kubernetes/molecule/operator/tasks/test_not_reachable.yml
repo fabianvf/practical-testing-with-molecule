@@ -1,0 +1,16 @@
+---
+
+- name: Ping the server for {{ seconds }} seconds
+  command: 'mcstatus {{ address }} ping'
+  changed_when: false
+  failed_when: false
+  ignore_errors: yes
+  retries: 10
+  delay: 3
+  register: mcstatus_ping_raw
+  until: mcstatus_ping_raw.rc == 0
+
+- name: Assert the server was not reachable
+  assert:
+    that:
+    - mcstatus_ping_raw.rc != 0

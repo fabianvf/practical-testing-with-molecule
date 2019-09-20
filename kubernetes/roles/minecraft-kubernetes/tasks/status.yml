@@ -1,57 +1,52 @@
 ---
+- vars:
+    ports: "{{ q('k8s',
+      api_version='v1',
+      kind='Service',
+      namespace=meta.namespace,
+      resource_name=meta.name + '-minecraft'
+    ).0.spec.ports }}"
+    server_port_block: "{{ ports | selectattr('name', 'equalto', 'minecraft') | list }}"
+    query_port_block: "{{ ports | selectattr('name', 'equalto', 'query') | list }}"
+    rcon_port_block: "{{ ports | selectattr('name', 'equalto', 'rcon') | list }}"
+    server_port: '{{ server_port_block.0.nodePort | string }}'
+    query_port: '{{ (query_port_block.0.nodePort | string) if query_port_block else None }}'
+    rcon_port: '{{ (rcon_port_block.0.nodePort | string) if rcon_port_block else None }}'
+  block:
+  - name: Set address on status
+    when: has_route
+    k8s_status:
+      api_version: demos.fabianism.us/v1alpha1
+      kind: Minecraft
+      name: '{{ meta.name }}'
+      namespace: '{{ meta.namespace }}'
+      status:
+        address: "{{ host }}:{{ server_port }}"
+        query_address: "{{ None if not query_port else host + ':' + query_port }}"
+        rcon_address: "{{ None if not rcon_port else host + ':' + rcon_port }}"
+    vars:
+      host: "{{ q('k8s',
+          api_version='route.openshift.io/v1',
+          kind='Route',
+          namespace=meta.namespace,
+          resource_name=meta.name + '-minecraft'
+        ).0.spec.host }}"
 
-- name: Set address on status
-  when: has_route
-  k8s_status:
-    api_version: demos.fabianism.us/v1alpha1
-    kind: Minecraft
-    name: '{{ meta.name }}'
-    namespace: '{{ meta.namespace }}'
-    status:
-      address: "{{ host }}:{{ server_port }} "
-      query_address: "{{ None if not query_port else host + ':' + query_port }}"
-      rcon_address: "{{ None if not query_port else host + ':' + rcon_port }}"
-  vars:
-    host: "{{ q('k8s',
-        api_version='route.openshift.io/v1',
-        kind='Route',
+  - name: Set address on status
+    when: not has_route
+    k8s_status:
+      api_version: demos.fabianism.us/v1alpha1
+      kind: Minecraft
+      name: '{{ meta.name }}'
+      namespace: '{{ meta.namespace }}'
+      status:
+        address: "{{ host }}:{{ server_port }}"
+        query_address: "{{ None if not query_port else host + ':' + query_port }}"
+        rcon_address: "{{ None if not rcon_port else host + ':' + rcon_port }}"
+    vars:
+      host: "{{ q('k8s',
+        api_version='v1',
+        kind='Pod',
         namespace=meta.namespace,
-        resource_name=meta.name + '-minecraft'
-      ).0.spec.host }}"
-    ports: "{{ q('k8s',
-      api_version='v1',
-      kind='Service',
-      namespace=meta.namespace,
-      resource_name=meta.name + '-minecraft'
-    ).0.spec.ports }}"
-    server_port: "{{ ports | selectattr('name', 'equalto', 'minecraft') }}"
-    query_port: "{{ ports | selectattr('name', 'equalto', 'query') }}"
-    rcon_port: "{{ ports | selectattr('name', 'equalto', 'rcon') }}"
-
-- name: Set address on status
-  when: not has_route
-  k8s_status:
-    api_version: demos.fabianism.us/v1alpha1
-    kind: Minecraft
-    name: '{{ meta.name }}'
-    namespace: '{{ meta.namespace }}'
-    status:
-      address: "{{ host }}:{{ server_port }} "
-      query_address: "{{ None if not query_port else host + ':' + query_port }}"
-      rcon_address: "{{ None if not query_port else host + ':' + rcon_port }}"
-  vars:
-    host: "{{ q('k8s',
-      api_version='v1',
-      kind='Pod',
-      namespace=meta.namespace,
-      label_selector='app=' + meta.name
-    ).0.status.hostIP }}"
-    ports: "{{ q('k8s',
-      api_version='v1',
-      kind='Service',
-      namespace=meta.namespace,
-      resource_name=meta.name + '-minecraft'
-    ).0.spec.ports }}"
-    server_port: "{{ ports | selectattr('name', 'equalto', 'minecraft') }}"
-    query_port: "{{ ports | selectattr('name', 'equalto', 'query') }}"
-    rcon_port: "{{ ports | selectattr('name', 'equalto', 'rcon') }}"
+        label_selector='app=' + meta.name
+      ).0.status.hostIP }}"

@@ -27,10 +27,11 @@
     query_enabled: no
     address: '{{ twd_cr_result.result.status.address }}'
 
-- name: Delete the Minecraft instance
-  k8s:
-    api_version: '{{ api_version }}'
-    kind: '{{ kind }}'
-    name: '{{ name }}'
-    namespace: '{{ namespace }}'
-    wait: yes
+# Good practice but bad for demos!
+# - name: Delete the Minecraft instance
+#   k8s:
+#     api_version: '{{ api_version }}'
+#     kind: '{{ kind }}'
+#     name: '{{ name }}'
+#     namespace: '{{ namespace }}'
+#     wait: yes

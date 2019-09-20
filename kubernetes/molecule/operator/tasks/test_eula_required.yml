@@ -18,25 +18,17 @@
   assert:
     that: teula_cr_result.result.status.address is defined
 
-- name: Ping the server for 30 seconds
-  command: 'mcstatus {{ teula_cr_result.result.status.address }} ping'
-  changed_when: false
-  retries: 10
-  delay: 3
-  register: mcstatus_status_raw
-  until: not (mcstatus_status_raw is failed)
-  ignore_errors: yes
+- import_tasks: test_not_reachable.yml
+  vars:
+    address: '{{ teula_cr_result.result.status.address  }}'
+    seconds: 30
 
-- name: Assert the server was not reachable
-  assert:
-    that:
-    - mcstatus_status_raw is failed
-
-- name: Delete the Minecraft instance
-  k8s:
-    state: absent
-    api_version: '{{ api_version }}'
-    kind: '{{ kind }}'
-    name: '{{ name }}'
-    namespace: '{{ namespace }}'
-    wait: yes
+# This is good practice but bad for demos
+# - name: Delete the Minecraft instance
+#   k8s:
+#     state: absent
+#     api_version: '{{ api_version }}'
+#     kind: '{{ kind }}'
+#     name: '{{ name }}'
+#     namespace: '{{ namespace }}'
+#     wait: yes
