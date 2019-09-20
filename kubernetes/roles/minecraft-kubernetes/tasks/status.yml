@@ -8,7 +8,9 @@
     name: '{{ meta.name }}'
     namespace: '{{ meta.namespace }}'
     status:
-      address: "{{ host }}:{{ node_port }} "
+      address: "{{ host }}:{{ server_port }} "
+      query_address: "{{ None if not query_port else host + ':' + query_port }}"
+      rcon_address: "{{ None if not query_port else host + ':' + rcon_port }}"
   vars:
     host: "{{ q('k8s',
         api_version='route.openshift.io/v1',
@@ -16,12 +18,15 @@
         namespace=meta.namespace,
         resource_name=meta.name + '-minecraft'
       ).0.spec.host }}"
-    node_port: "{{ q('k8s',
+    ports: "{{ q('k8s',
       api_version='v1',
       kind='Service',
       namespace=meta.namespace,
       resource_name=meta.name + '-minecraft'
-    ).0.spec.ports.0.nodePort }}"
+    ).0.spec.ports }}"
+    server_port: "{{ ports | selectattr('name', 'equalto', 'minecraft') }}"
+    query_port: "{{ ports | selectattr('name', 'equalto', 'query') }}"
+    rcon_port: "{{ ports | selectattr('name', 'equalto', 'rcon') }}"
 
 - name: Set address on status
   when: not has_route
@@ -31,17 +36,22 @@
     name: '{{ meta.name }}'
     namespace: '{{ meta.namespace }}'
     status:
-      address: "{{ host_ip }}:{{ node_port }}"
+      address: "{{ host }}:{{ server_port }} "
+      query_address: "{{ None if not query_port else host + ':' + query_port }}"
+      rcon_address: "{{ None if not query_port else host + ':' + rcon_port }}"
   vars:
-    host_ip: "{{ q('k8s',
+    host: "{{ q('k8s',
       api_version='v1',
       kind='Pod',
       namespace=meta.namespace,
       label_selector='app=' + meta.name
     ).0.status.hostIP }}"
-    node_port: "{{ q('k8s',
+    ports: "{{ q('k8s',
       api_version='v1',
       kind='Service',
       namespace=meta.namespace,
       resource_name=meta.name + '-minecraft'
-    ).0.spec.ports.0.nodePort }}"
+    ).0.spec.ports }}"
+    server_port: "{{ ports | selectattr('name', 'equalto', 'minecraft') }}"
+    query_port: "{{ ports | selectattr('name', 'equalto', 'query') }}"
+    rcon_port: "{{ ports | selectattr('name', 'equalto', 'rcon') }}"

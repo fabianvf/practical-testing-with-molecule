@@ -16,3 +16,6 @@ volumes:
   data:
     type: emptyDir
 resources: {}
+
+service_name: '{{ meta.name }}-minecraft'
+deployment_name: '{{ meta.name }}-minecraft'

@@ -92,10 +92,16 @@ spec:
                   type: string
                 pvp:
                   type: boolean
+                enableQuery:
+                  type: boolean
+                queryPort:
+                  type: integer
                 enableRcon:
                   type: boolean
                 rconPassword:
                   type: string
+                rconPort:
+                  type: integer
                 onlineMode:
                   type: boolean
                 allowNether:

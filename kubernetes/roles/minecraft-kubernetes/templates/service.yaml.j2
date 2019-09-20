@@ -6,13 +6,28 @@ metadata:
   labels:
     app: {{ meta.name }}
     game: minecraft
-  name: {{ meta.name }}-minecraft
+  name: {{ service_name }}
 spec:
   ports:
-  - name: web
+  - name: minecraft
     port: 25565
     protocol: TCP
     targetPort: 25565
+    nodePort: {{ minecraft_node_port or omit }}
+{% if server.enable_rcon | default(False) %}
+  - name: rcon
+    port: {{ server.rcon_port | default(25575) }}
+    protocol: TCP
+    targetPort: {{ server.rcon_port | default(25575) }}
+    nodePort: {{ rcon_node_port or omit }}
+{% endif %}
+{% if server.enable_query | default(False) %}
+  - name: query
+    port: {{ server.query_port | default(25565) }}
+    protocol: UDP
+    targetPort: {{ server.query_port | default(25565) }}
+    nodePort: {{ query_node_port or omit }}
+{% endif %}
   selector:
     app: {{ meta.name }}
     game: minecraft

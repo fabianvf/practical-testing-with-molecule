@@ -30,18 +30,49 @@
   debug:
     var: minecraft_env
 
+- name: Retrieve Deployment if it already exists
+  k8s_facts:
+    api_version: apps/v1
+    kind: Deployment
+    namespace: '{{ meta.namespace }}'
+    name: '{{ deployment_name }}'
+  register: minecraft_deployment
+
+- name: Retrieve Service if it already exists
+  k8s_facts:
+    api_version: v1
+    kind: Service
+    namespace: '{{ meta.namespace }}'
+    name: '{{ service_name }}'
+  register: minecraft_service
+
+# - include_vars: ports.yml
+
 - name: Create Deployment
   k8s:
     namespace: '{{ meta.namespace }}'
     definition: '{{ lookup("template", "deployment.yaml.j2") | from_yaml }}'
+    merge_type: merge
   vars:
     volume_specs: '{{ processed_volumes.volumes }}'
     volume_mounts: '{{ processed_volumes.volume_mounts }}'
+
 
 - name: Create Service
   k8s:
     namespace: '{{ meta.namespace }}'
     definition: '{{ lookup("template", "service.yaml.j2") | from_yaml }}'
+  vars:
+    # Kubernetes doesn't handle a port open on TCP and UDP idempotently so this prevents false updates
+    nodeport_default_dict:
+      nodePort: ""
+    port_defaults_dict:
+      spec:
+        ports: []
+    existing_ports: '{{ (minecraft_service.resources.0 | default(port_defaults_dict)).spec.ports }}'
+    minecraft_node_port: '{{ ((existing_ports | selectattr("name", "equalto", "minecraft") | list).0 | default(nodeport_default_dict)).nodePort }}'
+    rcon_node_port: '{{ ((existing_ports | selectattr("name", "equalto", "rcon") | list).0 | default(nodeport_default_dict)).nodePort }}'
+    query_node_port: '{{ ((existing_ports | selectattr("name", "equalto", "query") | list).0 | default(nodeport_default_dict)).nodePort }}'
 
 - name: Create Route
   k8s:

@@ -6,7 +6,7 @@ metadata:
   labels:
     app: {{ meta.name }}
     game: minecraft
-  name: {{ meta.name }}-minecraft
+  name: {{ deployment_name }}
 spec:
   replicas: 1
   selector:
@@ -27,8 +27,14 @@ spec:
         imagePullPolicy: IfNotPresent
         name: minecraft-server
         ports:
-        - containerPort: 25575
+{% if server.enable_rcon | default(False) %}
+        - containerPort: {{ server.rcon_port | default(25575) }}
           protocol: TCP
+{% endif %}
+{% if server.enable_query | default(False) %}
+        - containerPort: {{ server.query_port | default(25565) }}
+          protocol: UDP
+{% endif %}
         - containerPort: 25565
           protocol: TCP
         volumeMounts: {{ volume_mounts | to_json }}

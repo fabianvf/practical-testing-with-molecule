@@ -23,17 +23,25 @@
 
   - name: Set address based on Kubernetes IP
     set_fact:
-      address: "{{ q('k8s',
-          api_version='v1',
-          kind='Pod',
-          namespace=namespace,
-          label_selector='app=example-minecraft'
-        ).0.status.hostIP }}:{{ q('k8s',
-          api_version='v1',
-          kind='Service',
-          namespace=namespace,
-          resource_name='example-minecraft-minecraft'
-        ).0.spec.ports.0.nodePort }}"
+      address: "{{ host }}:{{ server_port.nodePort }} "
+      query_address: "{{ None if not query_port else host + ':' + query_port.nodePort | string }}"
+      rcon_address: "{{ None if not rcon_port else host + ':' + rcon_port.nodePort | string }}"
+    vars:
+      host: "{{ q('k8s',
+        api_version='v1',
+        kind='Pod',
+        namespace=namespace,
+        label_selector='app=example-minecraft'
+      ).0.status.hostIP }}"
+      ports: "{{ q('k8s',
+        api_version='v1',
+        kind='Service',
+        namespace=namespace,
+        resource_name='example-minecraft-minecraft'
+      ).0.spec.ports }}"
+      server_port: "{{ (ports | selectattr('name', 'equalto', 'minecraft') | list).0 }}"
+      query_port: "{{ ((ports | selectattr('name', 'equalto', 'query') | list).0 | default(None)) }}"
+      rcon_port: "{{ ((ports | selectattr('name', 'equalto', 'rcon') | list).0 | default(None)) }}"
     when: address is not defined
 
   - name: Output address
@@ -46,6 +54,7 @@
     delay: 5
     register: mcstatus_status_raw
     until: not (mcstatus_status_raw is failed)
+
   - name: load the mcstatus status json
     set_fact:
       mcstatus_status: '{{ mcstatus_status_raw.stdout | from_yaml }}'
@@ -53,19 +62,20 @@
   - debug: var=mcstatus_status
 
   - name: Query server
-    command: 'mcstatus {{ address }} query'
+    command: 'mcstatus {{ query_address }} query'
     changed_when: false
     register: mcstatus_query_raw
+
   - name: load the mcstatus query json
     set_fact:
       mcstatus_query: '{{ mcstatus_query_raw.stdout | from_yaml }}'
 
   - debug: var=mcstatus_query
 
-  # - name: Assert motd is properly set and reported
-  #   assert:
-  #     that:
-  #     - mcstatus_query.motd == motd
-  #     - motd in mcstatus_status.description
-  #   vars:
-  #     motd: '{{ hostvars["minecraft-server"].motd }}'
+  - name: Assert motd is properly set and reported
+    assert:
+      that:
+      - mcstatus_query.motd == motd
+      - motd in mcstatus_status.description
+    vars:
+      motd: "Default scenario"
