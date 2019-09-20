@@ -3,18 +3,20 @@ services: docker
 language: python
 install:
   - pip install docker molecule openshift jmespath mcstatus
+env:
+  - ANSIBLE_VERBOSITY=3
 jobs:
   include:
-  - name: Test regular role
+  - name: minecraft
     stage: test
     script:
     - cd traditional/minecraft
     - molecule test
-  - name: Test Kubernetes role
+  - name: minecraft-kubernetes
     script:
     - cd kubernetes
     - molecule test
-  - name: Test Operator
+  - name: minecraft-kubernetes-operator
     script:
     - cd kubernetes
     - molecule test -s operator
