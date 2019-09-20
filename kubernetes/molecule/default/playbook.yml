@@ -1,4 +1,5 @@
 ---
+
 - name: Converge
   hosts: localhost
   connection: local
@@ -6,6 +7,6 @@
     ansible_python_interpreter: '{{ ansible_playbook_python }}'
     server:
       enable_query: yes
-      motd: Default scenario
+      motd: '{{ motd }}'
   roles:
     - minecraft-kubernetes

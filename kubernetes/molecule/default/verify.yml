@@ -77,5 +77,3 @@
       that:
       - mcstatus_query.motd == motd
       - motd in mcstatus_status.description
-    vars:
-      motd: "Default scenario"

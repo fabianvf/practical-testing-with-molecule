@@ -32,6 +32,7 @@ provisioner:
       all:
         namespace: ${TEST_NAMESPACE:-osdk-test}
         eula_accepted: yes
+        motd: Minecraft deployed in Kubernetes by Molecule
   env:
     K8S_AUTH_KUBECONFIG: /tmp/molecule/kind-default/kubeconfig
     KUBECONFIG: /tmp/molecule/kind-default/kubeconfig
