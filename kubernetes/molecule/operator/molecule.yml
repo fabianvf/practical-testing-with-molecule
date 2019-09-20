@@ -32,7 +32,7 @@ provisioner:
   inventory:
     group_vars:
       all:
-        namespace: ${TEST_NAMESPACE:-osdk-test}
+        namespace: ${TEST_NAMESPACE:-default}
         api_version: demos.fabianism.us/v1alpha1
         kind: Minecraft
   env:
