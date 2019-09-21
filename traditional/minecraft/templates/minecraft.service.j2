@@ -21,7 +21,7 @@ PrivateTmp=true
 InaccessibleDirectories=/root /sys /srv /media -/lost+found
 ReadWriteDirectories=/opt/minecraft/server
 WorkingDirectory=/opt/minecraft/server
-ExecStart=/usr/bin/java -Xmx1024M -Xms1024M -jar server.jar
+ExecStart=/usr/bin/java -Xmx1024M -Xms1024M -jar spigot.jar
 ExecStop=/opt/minecraft/mcrcon -H localhost -P {{ rcon_port }} -p {{ rcon_password }} stop
 
 [Install]
