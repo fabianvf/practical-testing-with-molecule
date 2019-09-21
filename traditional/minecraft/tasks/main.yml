@@ -10,8 +10,6 @@
   - rsync
   - git
   - gcc
-  # - zip
-  # - jq
 
 - name: Create the minecraft user
   user:

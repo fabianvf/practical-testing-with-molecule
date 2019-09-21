@@ -1,4 +1,5 @@
 ---
+
 dependency:
   name: galaxy
 driver:
@@ -35,9 +36,10 @@ provisioner:
         namespace: ${TEST_NAMESPACE:-default}
         api_version: demos.fabianism.us/v1alpha1
         kind: Minecraft
+        kubeconfig: ${MOLECULE_EPHEMERAL_DIRECTORY}/.kubeconfig
   env:
-    K8S_AUTH_KUBECONFIG: /tmp/molecule/kind-test-local/kubeconfig
-    KUBECONFIG: /tmp/molecule/kind-test-local/kubeconfig
+    KUBECONFIG: ${MOLECULE_EPHEMERAL_DIRECTORY}/.kubeconfig
+    K8S_AUTH_KUBECONFIG: ${MOLECULE_EPHEMERAL_DIRECTORY}/.kubeconfig
     ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/roles
     KIND_PORT: '${TEST_CLUSTER_PORT:-10443}'
 verifier:

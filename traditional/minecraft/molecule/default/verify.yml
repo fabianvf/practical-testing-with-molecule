@@ -8,10 +8,10 @@
   vars:
     address: '{{ hostvars["minecraft-server"].ansible_default_ipv4.address }}'
   tasks:
-  - name: Wait two minutes to confirm server is reachable
+  - name: Wait 45 seconds to confirm server is reachable
     command: 'mcstatus {{ address }} status'
     changed_when: false
-    retries: 24
+    retries: 9
     delay: 5
     register: mcstatus_status_raw
     until: not (mcstatus_status_raw is failed)

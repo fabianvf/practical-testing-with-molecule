@@ -1,6 +1,6 @@
 ---
 
-- name: Ping the server for {{ seconds }} seconds
+- name: Ping the server for 30 seconds
   command: 'mcstatus {{ address }} ping'
   changed_when: false
   failed_when: false

@@ -1,4 +1,5 @@
 ---
+
 dependency:
   name: galaxy
 driver:
@@ -12,7 +13,7 @@ platforms:
     groups:
     - server
     box: centos/7
-    memory: 4096
+    memory: 1024
     cpus: 2
   - name: minecraft-client
     groups:

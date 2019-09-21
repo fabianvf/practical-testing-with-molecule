@@ -33,9 +33,10 @@ provisioner:
         namespace: ${TEST_NAMESPACE:-default}
         eula_accepted: yes
         motd: Minecraft deployed in Kubernetes by Molecule
+        kubeconfig: ${MOLECULE_EPHEMERAL_DIRECTORY}/.kubeconfig
   env:
-    K8S_AUTH_KUBECONFIG: /tmp/molecule/kind-default/kubeconfig
-    KUBECONFIG: /tmp/molecule/kind-default/kubeconfig
+    KUBECONFIG: ${MOLECULE_EPHEMERAL_DIRECTORY}/.kubeconfig
+    K8S_AUTH_KUBECONFIG: ${MOLECULE_EPHEMERAL_DIRECTORY}/.kubeconfig
     ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/roles
     KIND_PORT: '${TEST_CLUSTER_PORT:-9443}'
 scenario:

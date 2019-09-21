@@ -8,5 +8,8 @@
     server:
       enable_query: yes
       motd: '{{ motd }}'
+  pre_tasks:
+    - debug:
+        var: kubeconfig
   roles:
     - minecraft-kubernetes

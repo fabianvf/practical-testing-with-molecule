@@ -46,8 +46,6 @@
     name: '{{ service_name }}'
   register: minecraft_service
 
-# - include_vars: ports.yml
-
 - name: Create Deployment
   k8s:
     namespace: '{{ meta.namespace }}'

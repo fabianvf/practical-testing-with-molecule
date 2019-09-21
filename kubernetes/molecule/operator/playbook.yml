@@ -5,30 +5,30 @@
   vars:
     image_name: testing
   tasks:
-  - name: Get existing image hash
-    command: docker images -q {{ image_name }}
-    register: prev_hash
-    changed_when: false
+    - name: Get existing image hash
+      command: docker images -q {{ image_name }}
+      register: prev_hash
+      changed_when: false
 
-  - name: Build Operator Image
-    command: docker build -f /build/build/Dockerfile -t {{ image_name }} /build
-    register: build_cmd
-    changed_when: not prev_hash.stdout or prev_hash.stdout_lines.0 not in build_cmd.stdout_lines[-2]
+    - name: Build Operator Image
+      command: docker build -f /build/build/Dockerfile -t {{ image_name }} /build
+      register: build_cmd
+      changed_when: not prev_hash.stdout or prev_hash.stdout_lines.0 not in build_cmd.stdout_lines[-2]
 
-  - name: Get image ID for build
-    command: docker images {{ image_name }} -q
-    changed_when: false
-    register: docker_image_id
+    - name: Get image ID for build
+      command: docker images {{ image_name }} -q
+      changed_when: false
+      register: docker_image_id
 
-  - name: Tag image with ID
-    command: docker tag {{ image_name }} {{ image_name }}:{{ docker_image_id.stdout_lines.0 }}
-    changed_when: build_cmd is changed
+    - name: Tag image with ID
+      command: docker tag {{ image_name }} {{ image_name }}:{{ docker_image_id.stdout_lines.0 }}
+      changed_when: build_cmd is changed
 
-  - name: Set image
-    set_fact:
-      image: '{{ image_name }}:{{ docker_image_id.stdout_lines.0 }}'
-    delegate_to: localhost
-    delegate_facts: yes
+    - name: Set image
+      set_fact:
+        image: '{{ image_name }}:{{ docker_image_id.stdout_lines.0 }}'
+      delegate_to: localhost
+      delegate_facts: yes
 
 - name: Converge
   hosts: localhost
@@ -38,8 +38,11 @@
     deploy_dir: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/deploy"
     pull_policy: Never
   tasks:
-  - name: Create the Operator Deployment
-    k8s:
-      namespace: '{{ namespace }}'
-      definition: "{{ lookup('template', '/'.join([deploy_dir, 'operator.yaml.j2'])) }}"
-      wait: yes
+    - debug:
+        var: kubeconfig
+
+    - name: Create the Operator Deployment
+      k8s:
+        namespace: '{{ namespace }}'
+        definition: "{{ lookup('template', '/'.join([deploy_dir, 'operator.yaml.j2'])) }}"
+        wait: yes
