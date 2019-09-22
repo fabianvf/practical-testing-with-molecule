@@ -29,6 +29,9 @@ provisioner:
     group_vars:
       server:
         motd: "Minecraft deployed in Vagrant by Molecule"
+    host_vars:
+      minecraft-client:
+        wait_seconds: ${WAIT_SECONDS:-120}
   playbooks:
     converge: ../default/playbook.yml
     verify: ../default/verify.yml

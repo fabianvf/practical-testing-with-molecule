@@ -34,6 +34,7 @@ provisioner:
     host_vars:
       minecraft-client:
         ansible_python_interpreter: /usr/local/bin/python
+        wait_seconds: ${WAIT_SECONDS:-120}
 verifier:
   name: ansible
   lint:
