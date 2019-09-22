@@ -2,8 +2,8 @@
 
 pushd kubernetes
 molecule destroy --all
-(molecule converge && molecule verify)&
-(molecule converge -s operator && molecule verify -s operator)&
+molecule converge && molecule verify
+molecule converge -s operator && molecule verify -s operator
 popd
 
 pushd traditional/minecraft
@@ -14,5 +14,8 @@ git add templates/minecraft.service.j2
 git commit -m "Breaking the role for my demo"
 git push origin master
 
-(molecule converge && molecule verify)&
-(molecule converge -s vagrant && molecule verify -s vagrant)&
+molecule converge && molecule verify
+molecule converge -s vagrant && molecule verify -s vagrant
+
+export KUBECONFIG=~/.cache/molecule/kubernetes/operator/.kubeconfig
+doitlive play demo.sh

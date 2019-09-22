@@ -163,7 +163,7 @@ molecule verify
 #
 # Sweet, so I don't know if you remember from earlier, but we actually went ahead and forwarded the server
 # port of the docker container, so it should be accessible on localhost
-vim molecule/default/molecule.yml
+# vim molecule/default/molecule.yml
 #
 # <back to launcher, just punch in localhost>
 #
@@ -182,6 +182,24 @@ cd ../..
 cd kubernetes
 
 tree
+
+# All right, so we're running out of time here so I can't really give you any explanation of what Kubernetes
+# or Operators are, or do an in-depth walkthrough of this role, but feel free to approach me any time this
+# conference if you want to learn more. Basically, Operators sit in your Kubernetes cluster and react to
+# changes in the cluster state, so when you create an Operator with Ansible, you've basically got reactive
+# playbooks running in your cluster just waiting to fix things or create them when requested.
+# I've got two scenarios here, one for running the role straight into kubernetes, and one that will
+# make the operator image available to Kubernetes and then run a bunch of tests against it, where
+# I've actually split those tests out into their own task files which makes it look more like your
+# typical test directory set up
+# I'm just going to run these real quick to prove to you that they work and hopefully pique your interest
+molecule converge
+molecule verify
+
+molecule converge -s operator
+molecule verify -s operator
+
+# Don't forget to check travis
 
 # This isn't really a talk about Kubernetes, and it would be easy to do a full breakout session on
 # `What is Kubernetes`, so unfortunately I'm going to have to gloss over it a lot for this demo. Basically,
