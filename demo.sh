@@ -18,33 +18,17 @@ tree
 
 # So, heading to the minecraft role, we can see it looks a lot like what I showed in the slides (but not
 # exactly because I've updated this demo a lot since making the slides). I've got two scenarios,
-# default and vagrant. let's take a look at the molecule.ymls really quickly.
+# default and vagrant. We've already seen the default scenario's molecule.yml in the slides, so
+# let's take a look at the vagrant scenario's molecule.yml really quickly.
 #
-vim -O molecule/*/molecule.yml
+vim molecule/vagrant/molecule.yml
 
-# You can see we've got the dependency and lint sections which are identical, and then in the driver section
-# for the default scenario I'm using docker, and for the vagrant scenario I'm predictably using vagrant.
-#
-# Going on to the platform sections, I'm creating two hosts with each platform, one is minecraft-server,
-# which is going to be running the minecraft server, and the other is minecraft-client, which is going
-# to be used during verification (but isn't really related to the minecraft role, it has its own set of tasks).
-#
-# You can see in the docker scenario I'm forwarding port 25565 in the container to 25565 on my laptop.
-# I'm also using the centos7 image from geerlingguy (he has a bunch of them).
-#
-# They're really useful
-# because they all have systemd running in them, which functionally means that I can run pretty much
-# any command in the container that I'd run in say a VM or on bare metal. There's some other stuff going
-# on with the cgroups that allow everything to work properly, but I can't really explain them so ask Jeff.
-#
-# For the vagrant scenario I'm just using centos:7 boxes, because I work at red hat and it's what I reach for
-# instinctively.
-#
-# On to the provisioner section, they look pretty similar, except that I'm setting the motd to reflect the
-# driver, and you can see in the vagrant scenario I'm just running the same playbooks as the default scenario.
-#
-# And then finally the verifier section, I'm just using Ansible and ansible-lint.
-#
+# So this should look pretty familiar, we're setting up the same two hosts, but we're
+# using the vagrant driver with the libvirt provider instead, and if you look down here
+# you can see that we're actually just telling molecule to use the converge and verify
+# playbooks from the default scenario, since the process of deploying/verifying minecraft
+# is identical
+
 # So like I said before, I've already run converge which has stood up the instances, which means that the
 # create and prepare steps have already been run. We can take a quick look to see what the vagrant scenario
 # did for its preparation.
@@ -66,7 +50,7 @@ molecule converge -s vagrant
 # And yep, just as expected nothing changed. So let's run verify really quickly, and make sure everything
 # is working ok...
 # We'll do a shorter wait period since it should already be up
-WAIT_SECONDS=30 molecule verify -s vagrant
+WAIT_SECONDS=15 molecule verify -s vagrant
 
 # and it's broken! Good thing I ran verify and didn't just push this up
 #
@@ -139,6 +123,14 @@ git commit -m "Fixing bugs during a talk"
 
 git push origin master
 
+# and let me just show you what travis is actually doing really quickly,
+vim ../../.travis.yml
+
+# So you can see I'm just cding to the demo directory and running molecule test,
+# which is just going to run the default scenario (ie docker), which is why
+# it's actually able to run in travis, and since it's just using the same
+# role this build should now be passing
+
 # So we've verified it with the mcstatus utility, but let's just make sure for fun. first things first,
 # let's find the IP of that vagrant machine.
 molecule login -s vagrant --host minecraft-server
@@ -152,26 +144,6 @@ molecule login -s vagrant --host minecraft-server
 #
 # Yep that's minecraft.
 #
-# Let's do the same thing with the docker scenario really quickly, since that one should be broken too (they
-# use the same role after all)
-# So a quick converge, a quick verify...
-molecule converge
-
-molecule verify
-
-# We don't need the -s on these commands because it's the default scenario
-#
-# Sweet, so I don't know if you remember from earlier, but we actually went ahead and forwarded the server
-# port of the docker container, so it should be accessible on localhost
-# vim molecule/default/molecule.yml
-#
-# <back to launcher, just punch in localhost>
-#
-# So here we are in a completely different server, with its own motd!
-#
-# Let's check that travis build too
-#
-# < hope travis build is done >
 
 # 
 # All right, I do have one other demo scenario to show you. This one is more related to what I do with
@@ -183,7 +155,7 @@ cd kubernetes
 
 tree
 
-# All right, so we're running out of time here so I can't really give you any explanation of what Kubernetes
+# so we're running out of time here so I can't really give you any explanation of what Kubernetes
 # or Operators are, or do an in-depth walkthrough of this role, but feel free to approach me any time this
 # conference if you want to learn more. Basically, Operators sit in your Kubernetes cluster and react to
 # changes in the cluster state, so when you create an Operator with Ansible, you've basically got reactive
